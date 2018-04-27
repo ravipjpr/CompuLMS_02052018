@@ -1,0 +1,548 @@
+﻿@model CLSLms.CourseUnit
+@{
+    Layout = null;
+    string appTitle = "";
+    appTitle = System.Configuration.ConfigurationManager.AppSettings["ApplicationTitle"].ToString();
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@appTitle</title>
+    @Styles.Render("~/bundles/sb-admin-css")
+    @Scripts.Render("~/bundles/jqueryval2")
+    @Scripts.Render("~/bundles/sb-admin-script")
+    @Scripts.Render("~/bundles/admin-lms")
+    <style>
+        .navbar {
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light alert-info">
+        <a class="navbar-brand" href="#">
+            @if (Model.Course.CourseName.Length > 25)
+            {
+                <span title="@Model.Course.CourseName" data-toggle="tooltip">
+                    @Model.Course.CourseName.Substring(0, 25) ...
+                </span>
+            }
+            else
+            {
+                <span title="@Model.Course.CourseName" data-toggle="tooltip">
+                    @Model.Course.CourseName
+                </span>
+            }
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active">
+                    <a class="nav-link btn @ViewBag.BackButton" onclick="return SaveVideoTime()" href="@Url.Action("CustomPlayer", "Course",new { id = Model.courseid, reviewFlag= ViewBag.reviewFlag, sid = Model.unit_id, nav = "b" })"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">@Model.unit_name</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link btn @ViewBag.FwdButton" onclick="return SaveVideoTime()" href="@Url.Action("CustomPlayer", "Course",new { id = Model.courseid, reviewFlag= ViewBag.reviewFlag, sid = Model.unit_id, nav = "f"})"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                </li>
+            </ul>
+            <div class="form-inline my-2 my-lg-0">
+                <button class="btn btn-info btn-sm" data-toggle="modal" title="@LMSResourse.Admin.Course.lblCourseRaiseQuestion" onclick="LoadQuestions();" data-target="#questionModal"><i class="fa fa-question-circle-o" aria-hidden="true"></i></button>&nbsp;
+                <button class="btn btn-info btn-sm" data-toggle="modal" title="@LMSResourse.Admin.Course.btnUnitNotes" data-target="#notesModal" onclick="LoadNotes()"><i class="fa fa-sticky-note-o" aria-hidden="true"></i></button>&nbsp;
+                <button id="close" class="btn btn-sm btn-outline-danger"><i class="fa fa-times"></i></button>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <nav aria-label="courseStatus" style="display:none;">
+            <ul class="pagination justify-content-center pagination-sm" id="liStatus"></ul>
+        </nav>
+        @if (Model.unit_type == 1)
+            {
+            <div class="jumbotron-fluid" id="content">
+                @if (Model.unit_path_url != "NA" && Model.unit_path_url != "")
+                {
+                    <center>
+                        <audio controls id="contentAudio" style="display:none;">
+                            <source src="~/@Model.unit_path_url.Replace("\\", "/")" type="audio/ogg">
+                            <source src="~/@Model.unit_path_url.Replace("\\", "/")" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </center>
+                }
+                @Html.Raw(Model.unit_content)
+            </div>
+        }
+        else if (Model.unit_type == 4)
+        {
+            if (Model.sub_type == 1)
+            {
+                <div class="jumbotron-fluid" id="contentVideo">
+                    <center>
+                        <video class="col-8" autoplay controls>
+                            <source src="~/@Model.unit_path_url.Replace("\\", "/")" type="video/ogg">
+                            <source src="~/@Model.unit_path_url.Replace("\\", "/")" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </center>
+                </div>
+            }
+            else
+            {
+                <div class="jumbotron-fluid" id="contentVideo">
+                    <center>
+                        <div id="player" style="min-width:200px;min-height:200px"></div>
+                        <div id="timeHolder" style="display:none;"></div>
+                    </center>
+                </div>
+            }
+        }
+        else if (Model.unit_type == 5)
+        {
+            <div class="jumbotron-fluid" id="contentAudio">
+                <center>
+                    <audio controls>
+                        <source src="~/@Model.unit_path_url.Replace("\\", "/")" type="audio/ogg">
+                        <source src="~/@Model.unit_path_url.Replace("\\", "/")" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </center>
+            </div>
+        }
+        else if (Model.unit_type == 3)
+        {
+            <div class="jumbotron-fluid" id="contentDocument" style="padding-bottom:10px;">
+                @{
+                    var extension = Model.unit_path_url.Substring(Model.unit_path_url.LastIndexOf(".")).ToUpper();
+                    var filename = Model.unit_path_url.Substring(Model.unit_path_url.LastIndexOf("\\") + 1).ToUpper();
+                    if (extension == ".PDF")
+                    {
+                        <iframe id="frame" width="100%" height="500" class="form-control" src="~/Content/uploads/PDFJS/web/viewer.html?file=docs/@filename"></iframe>
+                    }
+                    else
+                    {
+                        <iframe id="frame" width="100%" height="500" class="form-control" src="https://docs.google.com/viewer?pid=explorer&efh=false&a=v&chrome=false&embedded=true&url=@ViewBag.urlDoc"></iframe>
+                    }
+                }
+            </div>
+                    }
+                    else if (Model.unit_type == 6)
+                    {
+                        <div class="jumbotron-fluid" id="contentDocument" style="padding-bottom:10px;height:auto;min-height:500px;height:auto !important;height:30px;">
+                            @*<form enctype='multipart/form-data' action='~/startquiz/start?ShowPanel=false&UID=@Model.unit_id' target="quizframe" method='post'>*@
+                                <div class="jumbotron bg-transparent" id="instruction">
+                                    <div class="container">
+                                        <h5 id="dismissing">
+                                            @LMSResourse.Common.Common.lblQuizInsheading
+                                        </h5>
+                                        <ul>
+                                            <li>@LMSResourse.Common.Common.lblQuizIns1</li>
+                                            <li>@LMSResourse.Common.Common.lblQuizIns2</li>
+                                            <li>@LMSResourse.Common.Common.lblQuizIns3</li>
+                                            <li>@LMSResourse.Common.Common.lblQuizIns4</li>
+                                            <li>
+                                                @LMSResourse.Common.Common.lblQuizIns5_1 
+                                                @*<button type='submit' id="btnStart" data-toggle="tooltip" data-placement="bottom" title='@LMSResourse.Common.ApplicationMenu.tooltipStart' style='background: none; border: 0px; color: #007bff;'>
+                                                    <i class='fa fa-play-circle-o fa-3x' aria-hidden='true'></i>
+                                                </button>*@
+                                                <a href="#" id="btnStart" title='@LMSResourse.Common.ApplicationMenu.tooltipStart'  data-id="@Model.assessment_id" data-id1="@Model.unit_id"><i class='fa fa-play-circle-o fa-3x' aria-hidden='true'></i></a>
+                                                @LMSResourse.Common.Common.lblQuizIns5_2
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                @*<input type='hidden' id='QuizID' name='QuizID' value='@Model.assessment_id' />
+                            </form>*@
+                            <iframe id="quizframe" name="quizframe" style="width:100%;height:500px;display:none" class="form-control" src=""></iframe>
+                        </div>
+                    }
+
+        @if (Model.unit_type != 6)
+            {
+            <div class="alert alert-info" role="alert">
+                <div class="form-check" id="complete2">
+                    <label class="form-check-label">
+                        <input class="form-check-input" style="margin-top:6px" type="checkbox" value="" id="complete">
+                        @LMSResourse.Admin.Course.lblMarkUnitComplete
+                    </label>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="modal fade" id="notesModal" tabindex="-1" role="dialog" aria-labelledby="notesModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notesModalLabel">@LMSResourse.Admin.Course.lblUnitNotesHeading</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="notes-text" class="col-form-label">@LMSResourse.Admin.Course.lblUnitNotes:</label>
+                        <textarea class="form-control" id="notes-text" rows="5" maxlength="250"></textarea>
+                        <label class="col-form-label text-danger" id="notesError"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="SaveNotes()">@LMSResourse.Admin.Course.btnUnitNoteSave</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LMSResourse.Common.Common.btnClose</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade bd-example-modal-lg" id="questionModal" tabindex="-1" role="dialog" aria-labelledby="questionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="questionModalLabel">@LMSResourse.Admin.Course.lblCourseRaiseQuestion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="existingFAQ">
+                        <div class="col-4">
+                            <div class="list-group" id="list-tab" role="tablist">
+                                <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home">Home</a>
+                                <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list" href="#list-profile" role="tab" aria-controls="profile">Profile</a>
+                                <a class="list-group-item list-group-item-action" id="list-messages-list" data-toggle="list" href="#list-messages" role="tab" aria-controls="messages">Messages</a>
+                                <a class="list-group-item list-group-item-action" id="list-settings-list" data-toggle="list" href="#list-settings" role="tab" aria-controls="settings">Settings</a>
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="tab-content" id="nav-tabContent" >
+                                <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">...</div>
+                                <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">...</div>
+                                <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">...</div>
+                                <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="newFAQ" style="display:none;">
+                        <div class="col-2">
+                            <label for="question-text" class="col-form-label">@LMSResourse.Admin.Course.fldCourseNewQuestion</label>
+                        </div>
+                        <div class="col-10">
+                            <textarea class="form-control" id="question-text" rows="8" maxlength="1000"></textarea>
+                            <label class="col-form-label text-danger" id="questionError"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="newQuestion">@LMSResourse.Admin.Course.fldCourseNewQuestion</button>
+                    <button type="button" class="btn btn-danger" style="display:none" id="existingQuestion">@LMSResourse.Admin.Course.btnViewExistingQuestion</button>
+                    <button type="button" class="btn btn-primary" style="display:none" id="btnSaveQuestion">@LMSResourse.Common.Common.btnSave</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LMSResourse.Common.Common.btnClose</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var myTimer;
+        // 2. This code loads the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // 3. This function creates an <iframe> (and YouTube player)
+        //    after the API code downloads.
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+        // 4. The API will call this function when the video player is ready.
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            var regExp = /^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#\&\?]*).*/;
+            var url = '@Model.unit_path_url';
+            var match = url.match(regExp);
+            if (match && match[2].length == 11) {
+                player.loadVideoById(match[2], "@ViewBag.VideoTime", "low")
+            }
+        }
+        // 5. The API calls this function when the player's state changes.
+        //    The function indicates that when playing a video (state=1),
+        //    the player should play for six seconds and then stop.
+        var done = false;
+        function onPlayerStateChange(event) {
+            if(event.data==1) { // playing
+                myTimer = setInterval(function(){
+                    var time;
+                    time = player.getCurrentTime();
+                    $("#timeHolder").text(time);
+                }, 100);
+            }
+            else { // not playing
+                clearInterval(myTimer);
+            }
+            //        if (event.data == YT.PlayerState.PLAYING && !done) {
+            //setTimeout(stopVideo, 6000);
+            //done = true;
+            //}
+
+
+        }
+        $(window).unload(function(){
+            SaveVideoTime();
+        });
+        function SaveVideoTime()
+        {
+            if ("@ViewBag.reviewFlag" != "Y") {
+                if(document.getElementById("timeHolder")!=null){
+                    $.ajax({
+                        type: 'POST',
+                        url: "@Url.Action("SaveVideoTime", "Course")" + "/" + @Model.unit_id,
+                        async:false,
+                        data: {key_leave:$("#timeHolder").text()}
+                    });
+                }
+            }
+            return true;
+        }
+    </script>
+    <script>
+        $("#complete").change(function () {
+            if ("@Model.unit_type" != "6") {
+                if (this.checked) {
+                    SaveStatus(2);
+                }
+            }
+        });
+        $(document).ready(function () {
+            if(document.getElementById("contentAudio")!=null){
+                setTimeout(function () {
+                    document.getElementById("contentAudio").play();
+                }, @Model.audio_delay * 1000);
+            }
+            window.onunload = refreshParent;
+            $('#content a[href]').attr('target', '_blank');
+            function refreshParent() {
+                if (window.opener != null)
+                    window.opener.location.reload();
+            }
+            $("#btnStart").click(function () { 
+                $("#btnStart").hide(); 
+                $("#instruction").hide(); 
+
+                var courseId = $(this).attr("data-id");
+                var UID = $(this).attr("data-id1");
+                $("#quizframe").attr('src', pathname1 + "/Assessment/index?quizID=" + courseId+"&UID="+UID+"");
+                $("#quizframe").show(); 
+            });
+            $("#close").click(function () { SaveVideoTime(); window.close(); });
+
+            SaveStatus(1);
+            if ("@ViewBag.Unitstatus" == "2") {
+                $("#complete2").addClass("disabled");
+                $("#complete").prop("disabled", "disabled");
+                $("#complete").prop('checked', true);
+            }
+            if ("@ViewBag.reviewFlag" != "N") {
+                $("#complete2").addClass("disabled");
+                $("#complete").prop("disabled", "disabled");
+            }
+
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetUnitStatus", "Course")" + "/" + @Model.courseid,
+                dataType: "json",
+                success: function (data) {
+                    if (data.aaData != null && data.aaData != 'nothing' && data.aaData != 'undefined') {
+                        for (var i = 0; i < data.aaData.length; i++) {
+                            if(data.aaData[i].UnitStatus == 0)
+                                $("#liStatus").append('<li class="page-item"><a class="page-link bg-secondary" href="#" style="color:white" data-toggle="tooltip" data-placement="bottom" title="' + data.aaData[i].UnitName + '"><i class="fa fa-eye-slash" aria-hidden="true"></i></a></li></a></li>');
+                            else if(data.aaData[i].UnitStatus == 1)
+                                $("#liStatus").append('<li class="page-item"><a class="page-link bg-info" href="#" style="color:white" data-toggle="tooltip" data-placement="bottom" title="' + data.aaData[i].UnitName + '"><i class="fa fa-eye" aria-hidden="true"></i></a></li></a></li>');
+                            else if(data.aaData[i].UnitStatus == 2)
+                                $("#liStatus").append('<li class="page-item"><a class="page-link bg-success" href="#" style="color:white" data-toggle="tooltip" data-placement="bottom" title="' + data.aaData[i].UnitName + '"><i class="fa fa-check" aria-hidden="true"></i></a></li></a></li>');
+                        }
+                        $('[data-toggle="tooltip"]').tooltip()
+
+                    }
+                },
+                async: false
+            });
+        });
+
+        function resizeIframe(obj) {
+            obj.style.height = $(window).height() - 200 + 'px';
+        }
+        function SaveStatus(s) {
+            if ("@ViewBag.reviewFlag" != "Y") {
+                var param = {
+                    status: s
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("UnitStatus", "Course")" + "/@Model.unit_id",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(param),
+                    dataType: "json",
+                    sucess: function (data) {
+                    },
+                    complete: function (data, textStatus) {
+                        if (data.responseText != null && data.responseText != "") {
+                            alert(data.responseText);
+                        }
+                    },
+                    async: false
+                });
+            }
+        }
+        function LoadNotes() {
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetUnitNotes", "Course")" + "/@Model.unit_id",
+                dataType: "json",
+                success: function (data) {
+                    if (data.aaData != null && data.aaData != 'nothing' && data.aaData != 'undefined') {
+                        $("#notes-text").val(data.aaData.Notes);
+                    }
+                },
+                complete: function (data, textStatus) {
+                },
+                async: false
+            });
+        }
+        function SaveNotes() {
+            if($("#notes-text").val() != "")
+            {
+                var param = {
+                    notes: $("#notes-text").val()
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("SaveUnitNotes", "Course")" + "/@Model.unit_id",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(param),
+                    dataType: "json",
+                    sucess: function (data) {
+                        $('#notesModal').modal('hide');
+                    },
+                    complete: function (data, textStatus) {
+                        if (data.responseText != null && data.responseText != "") {
+                            $('#notesModal').modal('hide');
+                        }
+                    },
+                    async: false
+                });
+            }
+            else
+            {
+                $("#notesError").text("@LMSResourse.Admin.Course.msgReqUnitNotes");
+            }
+        }
+
+        $("#newQuestion").click(function(){
+            $("#newFAQ").show();
+            $("#existingFAQ").hide();
+            $("#existingQuestion").show();
+            $("#newQuestion").hide();
+            $("#btnSaveQuestion").show();
+
+        });
+        $("#existingQuestion").click(function(){
+            $("#newFAQ").hide();
+            $("#existingFAQ").show();
+            $("#existingQuestion").hide();
+            $("#newQuestion").show();
+            $("#btnSaveQuestion").hide();
+            LoadQuestions();
+        });
+
+        $("#btnSaveQuestion").click(function(){
+            if($("#question-text").val() != "")
+            {
+                var param = {
+                    uid: @Model.unit_id,
+                    q: $("#question-text").val(),
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("SaveCourseQuestion", "Course")" + "/@Model.courseid",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(param),
+                    dataType: "json",
+                    success: function (data) {
+                        $("#newFAQ").hide();
+                        $("#existingFAQ").show();
+                        $("#existingQuestion").hide();
+                        $("#newQuestion").show();
+                        $("#btnSaveQuestion").hide();
+                        $("#questionError").hide();
+                        $("#question-text").val("");
+                    },
+                    complete: function (data, textStatus) {
+                        if (data.responseText != null && data.responseText != "") {
+                            $("#newFAQ").hide();
+                            $("#existingFAQ").show();
+                            $("#existingQuestion").hide();
+                            $("#newQuestion").show();
+                            $("#btnSaveQuestion").hide();
+                        }
+                    },
+                    async: false
+                });
+            }
+            else
+            {
+                $("#questionError").text("@LMSResourse.Admin.Course.msgReqCourseQuestionText");
+            }
+        });
+
+        function LoadQuestions() {
+            var CourseQuestionList = [];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetCourseQuestions", "Course")" + "/@Model.courseid",
+                dataType: "json",
+                success: function (data) {
+                    if (data.aaData != null && data.aaData != 'nothing' && data.aaData != 'undefined') {
+                        for (var i = 0; i < data.aaData.length; i++) {
+                            CourseQuestionList.push({ QuestionText: data.aaData[i].QuestionText, AnswerText: data.aaData[i].AnswerText });
+                        }
+                    }
+                },
+                complete: function (data, textStatus) {
+                },
+                async: false
+            });
+            $("#list-tab").empty();
+            $("#nav-tabContent").empty();
+            if(CourseQuestionList.length == 0){
+                $("#list-tab").append('<a class="list-group-item list-group-item-action active" id="list-no-list" data-toggle="list" href="#list-no" role="tab" aria-controls="no">-</a>');
+                $("#nav-tabContent").append('<div class="tab-pane fade show active" id="list-no" role="tabpanel" aria-labelledby="list-no-list">' + '@LMSResourse.Admin.Course.lblCourseNoQuestions' + '</div>');
+            }
+            for (var j = 0; j < CourseQuestionList.length; j++) {
+                //$("#list-tab").append('<li class="ui-state-default" data-id="' + CourseUnitList[j].UnitID + '" data-courseid="' + CourseUnitList[j].CourseId +  '"><i class="fa fa-arrows-v" style="font-size:8px;"></i>&nbsp;' + CourseUnitList[j].UnitName  + '</li>')
+                if(j == 0){
+                    $("#list-tab").append('<a class="list-group-item list-group-item-action active" id="list-' + j + '-list" data-toggle="list" href="#list-' + j +'" role="tab" aria-controls="home">' + CourseQuestionList[j].QuestionText +'</a>');
+                    $("#nav-tabContent").append('<div class="tab-pane fade show active" id="list-' + j + '" role="tabpanel" aria-labelledby="list-' +  j + '-list">' + CourseQuestionList[j].AnswerText + '</div>');
+                }
+                else{
+                    $("#list-tab").append('<a class="list-group-item list-group-item-action" id="list-' + j + '-list" data-toggle="list" href="#list-' + j +'" role="tab" aria-controls="home">' + CourseQuestionList[j].QuestionText +'</a>');
+                    $("#nav-tabContent").append('<div class="tab-pane fade" id="list-' + j + '" role="tabpanel" aria-labelledby="list-' +  j + '-list">' + CourseQuestionList[j].AnswerText + '</div>');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

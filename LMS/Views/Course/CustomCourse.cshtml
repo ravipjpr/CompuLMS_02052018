@@ -1,0 +1,202 @@
+﻿@model CLSLms.Course
+@{
+    ViewBag.Title = "Create course";
+
+}
+@using (Html.BeginForm("CustomCourse", "Course", FormMethod.Post, new { enctype = "multipart/form-data", @id = "myform" }))
+{
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb" role="navigation">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="~/Admin">@LMSResourse.Common.ApplicationMenu.lblHome</a></li>
+                <li class="breadcrumb-item"><a href="~/Course">@LMSResourse.Common.ApplicationMenu.lblCourses</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@LMSResourse.Common.ApplicationMenu.tooltipCreateCourse</li>
+            </ol>
+        </nav>
+        <div style="display:none;" class="errormessage" id="errorMessages">
+            <div>@Html.ValidationMessageFor(model => model.CourseName)</div>
+            <div>@Html.ValidationMessageFor(model => model.CategoryId)</div>
+            <div>@Html.ValidationMessageFor(model => model.CourseDescription)</div>
+            <div>@Html.ValidationMessageFor(model => model.CertificateId)</div>
+            <div id="servererrorsFile"></div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.CourseName)*</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.TextBoxFor(model => model.CourseName, new { @class = "form-control", @aria_describedby = "basic-addon2" })
+                        <span class="input-group-addon" id="CourseName_feedback"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.CategoryId)*</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>)ViewBag.CategoriesList, @LMSResourse.Common.Common.dropSelectCategory, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.CourseDescription)*</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.TextAreaFor(model => model.CourseDescription, new { @class = "form-control", @aria_describedby = "basic-addon2" })
+                        <span class="input-group-addon" id="CourseDescription_feedback"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.Tags)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.TextAreaFor(model => model.Tags, new { @class = "form-control", @aria_describedby = "basic-addon2", @placeholder = "Enter tags separated by (,)" })
+                        <span class="input-group-addon" id="Tags_feedback"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.CertificateId)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.DropDownList("CertificateId", (IEnumerable<SelectListItem>)ViewBag.CertificateList, @LMSResourse.Common.Common.dropSelectCertificate, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.IsMobile)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.DropDownListFor(model => model.IsMobile, (IEnumerable<SelectListItem>)ViewBag.MobileCompatibleType, htmlAttributes: new { @class = "form-control", @disabled = "disabled" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.Mandaotry)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.DropDownListFor(model => model.Mandaotry, (IEnumerable<SelectListItem>)ViewBag.MandaotryType, htmlAttributes: new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.CourseDurationMin)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.TextBoxFor(model => model.CourseDurationMin, htmlAttributes: new { @class = "form-control", maxlength = "3" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.FeeType)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.DropDownListFor(model => model.FeeType, (IEnumerable<SelectListItem>)ViewBag.FeeTypeList, htmlAttributes: new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.CourseFees)</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.TextBoxFor(model => model.CourseFees, htmlAttributes: new { @class = "form-control", maxlength = "5" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">@Html.LabelFor(model => model.Status)</div>
+                <div class="col-md-4">
+                    <div class="input-group" style="padding-top: 8px;">
+                        @Html.CheckBoxFor(model => model.Status)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-4"></div>
+                <div class="col-md-6">
+                    <input type="submit" class="btn btn-primary" value="@LMSResourse.Common.Common.btnSave" id="create" />&nbsp;
+                    <input type="button" class="btn btn-secondary" value="@LMSResourse.Common.Common.btnCancel" onclick="window.location.href='@Url.Action("index", "Course")';" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            fieldLength($("#CourseName"), $("#CourseName_feedback"));
+            fieldLength($("#CourseDescription"), $("#CourseDescription_feedback"));
+            fieldLength($("#Tags"), $("#Tags_feedback"));
+            fieldLength($("#WindowHeight"), $("#WindowHeight_feedback"));
+            fieldLength($("#WindowWidth"), $("#WindowWidth_feedback"));
+            fieldLength($("#PassMarks"), $("#PassMarks_feedback"));
+            $("#CourseName").focus();
+            $("#mainmenu li").removeClass("active");
+            $("#mainmenu li:eq(4)").addClass("active");
+
+            $("#create").click(function (e) {
+                var result = $('#myform').valid();
+                if ($('#myform').valid()) {
+                    $("#errorMessages").hide();
+                    $('#myform').submit();
+                    return true;
+                }
+                else { $("#errorMessages").show(); return false; }
+            })
+
+            $("#CourseName").keypress(function () { showerror(); });
+            $("#CourseDescription").keypress(function () { showerror(); });
+            $("#CourseName").blur(function () { showerror(); });
+            $("#CourseDescription").blur(function () { showerror(); });
+
+            if ($('#errorMessages').text().trim().length > 0) {
+                $("#errorMessages").show();
+            } else $("#errorMessages").hide();
+
+            function showerror() {
+                if ($('#errorMessages').text().trim().length > 0) {
+                    $("#errorMessages").show();
+                } else $("#errorMessages").hide();
+            }
+
+        });
+
+
+
+    </script>
+}
