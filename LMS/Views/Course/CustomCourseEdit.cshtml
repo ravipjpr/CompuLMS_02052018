@@ -1,0 +1,472 @@
+﻿@model CLSLms.Course
+@{
+    ViewBag.Title = "Edit course";
+    @Styles.Render("~/Content/jquery.dataTables.min.css");
+    <style>
+        #sortable {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+            #sortable li {
+                padding-left: 1.5em;
+            }
+
+                #sortable li i {
+                    position: absolute;
+                    margin-left: -1.3em;
+                    margin-top: 1.1em;
+                }
+    </style>
+}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" role="navigation">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="~/Admin">@LMSResourse.Common.ApplicationMenu.lblHome</a></li>
+            <li class="breadcrumb-item"><a href="~/Course">@LMSResourse.Common.ApplicationMenu.lblCourses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@LMSResourse.Common.ApplicationMenu.tooltipEditCourse</li>
+        </ol>
+    </nav>
+    @using (Html.BeginForm("CustomCourseEdit", "Course", FormMethod.Post, new { enctype = "multipart/form-data", @id = "myform" }))
+    {
+        <div style="display:none;" class="errormessage" role="alert" id="errorMessages">
+            <div>@Html.ValidationMessageFor(model => model.CourseName)</div>
+            <div>@Html.ValidationMessageFor(model => model.CategoryId)</div>
+            <div>@Html.ValidationMessageFor(model => model.CourseDescription)</div>
+            <div> @Html.ValidationMessageFor(model => model.CertificateId)</div>
+            <div id="servererrorsFile"></div>
+        </div>
+        <input type="hidden" id="SelectedId" value="0" />
+        @Html.HiddenFor(model => model.CourseId)
+        @Html.Hidden("ModificationOption", "0")
+        @Html.HiddenFor(model => model.CourseType)
+        @Html.HiddenFor(model => model.IsUserDefined)
+        @Html.HiddenFor(model => model.WindowHeight)
+        @Html.HiddenFor(model => model.WindowWidth)
+        @Html.HiddenFor(model => model.FolderLocation)
+        @Html.HiddenFor(model => model.PassMarks)
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-2">
+                    @Html.LabelFor(model => model.CourseName)*<br />
+                    <a class="" data-toggle="collapse" href="#collapseCustomCourse" aria-expanded="false" aria-controls="collapseCustomCourse">
+                        @LMSResourse.Admin.Course.lblEditCourseAttributes
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        @Html.TextBoxFor(model => model.CourseName, new { @class = "form-control", @aria_describedby = "basic-addon2" })
+                        <span class="input-group-addon" id="CourseName_feedback"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="collapse" id="collapseCustomCourse">
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.CategoryId)*</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>)ViewBag.CategoriesList, @LMSResourse.Common.Common.dropSelectCategory, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.CourseDescription)*</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.TextAreaFor(model => model.CourseDescription, new { @class = "form-control", @aria_describedby = "basic-addon2" })
+                            <span class="input-group-addon" id="CourseDescription_feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.Tags)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.TextAreaFor(model => model.Tags, new { @class = "form-control", @aria_describedby = "basic-addon2", @placeholder = "Enter tags separated by (,)" })
+                            <span class="input-group-addon" id="Tags_feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.CertificateId)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.DropDownList("CertificateId", (IEnumerable<SelectListItem>)ViewBag.CertificateList, @LMSResourse.Common.Common.dropSelectCertificate, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.IsMobile)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.DropDownListFor(model => model.IsMobile, (IEnumerable<SelectListItem>)ViewBag.MobileCompatibleType, htmlAttributes: new { @class = "form-control", @disabled = "disabled" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.Mandaotry)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.DropDownListFor(model => model.Mandaotry, (IEnumerable<SelectListItem>)ViewBag.MandaotryType, htmlAttributes: new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.CourseDurationMin)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.TextBoxFor(model => model.CourseDurationMin, htmlAttributes: new { @class = "form-control", maxlength = "3" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.FeeType)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.DropDownListFor(model => model.FeeType, (IEnumerable<SelectListItem>)ViewBag.FeeTypeList, htmlAttributes: new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.CourseFees)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.TextBoxFor(model => model.CourseFees, htmlAttributes: new { @class = "form-control", maxlength = "5" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-2">@Html.LabelFor(model => model.Status)</div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            @Html.CheckBoxFor(model => model.Status)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-6">
+                        <input type="submit" class="btn btn-primary" value="@LMSResourse.Common.Common.btnSave" id="create" />&nbsp;
+                        <input type="button" class="btn btn-secondary" value="@LMSResourse.Common.Common.btnCancel" onclick="window.location.href='@Url.Action("index", "Course")';" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="breadcrumb" style="background-color:transparent">
+        <nav class="nav nav-pills flex-column flex-sm-row" style="font-size:20px;">
+            <div class="btn-group" style="margin-right:10px;" data-toggle="tooltip" data-placement="top" title="@LMSResourse.Admin.Course.btnAddCourseUnit">
+                <button type="button" class="btn btn-sm dropdown-toggle btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-plus"></i> @LMSResourse.Admin.Course.btnCourseunit
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="~/Course/AddCourseUnit?t=1&cid=@Model.CourseId"><i class="fa fa-file-text-o fa-fw" style="color:grey" aria-hidden="true"></i>&nbsp; @LMSResourse.Admin.Course.lblUnitContent</a></li>
+                    <li><a class="dropdown-item" href="~/Course/AddCourseUnit?t=3&cid=@Model.CourseId"><i class="fa fa-file-o bg-light fa-fw" style="color:grey" aria-hidden="true"></i>&nbsp; @LMSResourse.Admin.Course.lblUnitDocument</a></li>
+                    @*<li><a class="dropdown-item" href="~/Course/AddCourseUnit?t=2&cid=@Model.CourseId"><i class="fa fa-mixcloud bg-light fa-fw" style="color:grey" aria-hidden="true"></i>&nbsp; @LMSResourse.Admin.Course.lblUnitWebContent</a></li>*@
+                    <div class="dropdown-divider"></div>
+                    <li><a class="dropdown-item" href="~/Course/AddCourseUnit?t=4&cid=@Model.CourseId"><i class="fa fa-film bg-light fa-fw" style="color:grey" aria-hidden="true"></i>&nbsp; @LMSResourse.Admin.Course.lblUnitVideo</a></li>
+                    <li><a class="dropdown-item" href="~/Course/AddCourseUnit?t=5&cid=@Model.CourseId"><i class="fa fa-music bg-light fa-fw" style="color:grey" aria-hidden="true"></i>&nbsp; @LMSResourse.Admin.Course.lblUnitAudio</a></li>
+                    <div class="dropdown-divider"></div>
+                    <li><a class="dropdown-item" href="~/Course/AddCourseUnit?t=6&cid=@Model.CourseId"><i class="fa fa-question bg-light fa-fw" style="color:grey" aria-hidden="true"></i>&nbsp; @LMSResourse.Admin.Course.lblUnitAssessment</a></li>
+                </ul>
+            </div>
+            <a style="margin-right:10px;" title="@LMSResourse.Admin.Course.btnEditCourseUnit" class="btn btn-sm btn-outline-primary disabled" id="btnEdit" href="" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-pencil-square-o"></i></a>
+            <a style="margin-right:10px;" title="@LMSResourse.Admin.Course.btnDeleteCourseUnit" class="btn btn-sm btn-outline-primary disabled" id="btnDelete" href="" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-trash-o"></i></a>
+            <a style="margin-right:10px;" class="btn btn-sm btn-outline-primary" id="btnReorder" href="#" data-toggle="modal" data-placement="bottom"><i class="fa fa-list-ol" title="@LMSResourse.Admin.Course.tooltipReorderUnit" data-toggle="tooltip" data-placement="bottom"></i></a>
+        </nav>
+    </div>
+    <div class="table-responsive margin-top-20">
+        <table border="0" class="table table-bordered dataTable table-hover " id="myDataTable">
+            <thead>
+                <tr>
+                    <th class="border-left-top-bottom">
+                        @LMSResourse.Admin.Course.fldCourseUnitName
+                    </th>
+                    <th style="width:200px">
+                        @LMSResourse.Admin.Course.fldUnitType
+                    </th>
+                    <th style="width:200px">
+                        @LMSResourse.Common.Common.thCreationDate
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@LMSResourse.Admin.Course.lblConfirmUnitDeleteHeading</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @LMSResourse.Admin.Course.msgConfirmUnitDelete
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">@LMSResourse.Common.Common.btnCancel</button>
+                <button type="button" class="btn btn-primary" id="btn_deleteOk">@LMSResourse.Admin.Course.btnDeleteCourseUnit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="reorderModal" tabindex="-2" role="dialog" aria-labelledby="reorderModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reorderModalLabel">@LMSResourse.Admin.Course.tooltipReorderUnit</h5>
+            </div>
+            <div class="modal-body">
+                <ul id="sortable">
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">@LMSResourse.Common.Common.btnCancel</button>
+                <button type="button" class="btn btn-primary" id="btn_Order">@LMSResourse.Admin.Course.btnSaveUnitOrder</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/Scripts/jquery-ui.js"></script>
+    @Scripts.Render("~/bundles/datatable-js")
+    <script type="text/javascript">
+        function ShowHideAction() {
+            if ($("#SelectedId").val() == "")
+                $("#SelectedId").val(0);
+            if ($("#SelectedId").val() == "0") {
+                $("#btnEdit").addClass("disabled").click(function () { return false; });
+                $("#btnDelete").addClass("disabled").click(function () { return false; });
+            }
+            else {
+                $("#btnEdit").removeClass("disabled").click(function () { if ($("#SelectedId").val() != "0") { window.location = '@Url.Action("EditCourseUnit", "Course")' + '/' + $("#SelectedId").val(); } else { return false; } });
+                $("#btnDelete").removeClass("disabled").click(function () { if ($("#SelectedId").val() != "0") { return true; } else { return false; } });
+            }
+        }
+        function htmlEncode(value) {
+            //create a in-memory div, set it's inner text(which jQuery automatically encodes)
+            //then grab the encoded contents back out.  The div never exists on the page.
+            return $('<div/>').text(value).html();
+        }
+        function htmlDecode(value) {
+            return $('<div/>').html(value).text();
+        }
+
+        function fillGrid() {
+            var appname = window.location.pathname.split("/", 2).toString().replace(",", "");
+            var fileUrl = document.location.origin + '/' + appname + "/Include/datatablefiles/";
+            var filename = "en-us.txt";
+            if (filename == '')
+                fileUrl = fileUrl + "en-us.txt";
+            else
+                fileUrl = fileUrl + filename;
+            var oTable = $('#myDataTable').dataTable({
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("AjaxHandlerCourseUnit", "Course")",
+                "bProcessing": true,
+                "bStateSave": false,
+                "bDestroy": true,
+                "sPaginationType": "full_numbers",
+                "sDom": '<"top"lfip>rt<"bottom"ip<"clear">',
+                "aLengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+                "oLanguage": { "sUrl": fileUrl },
+                "fnServerParams": function (aoData) {
+                    aoData.push({ "name": "iD", "value": "@Model.CourseId" })
+                },
+                "aoColumns": [{
+                    "bSortable": false,
+                    "fnRender": function (oObj) {
+                        return (htmlEncode(oObj.aData[0].toString()));
+                    }
+                },
+                            {
+                                "bSortable": false
+                            },
+                            {
+                                "bSortable": false,
+                                "fnRender": function (o, val) {
+                                    return o.aData[2].toString() + '<input type="hidden" id="CourseId" value="' + o.aData[3].toString() + '" />';
+                                }
+                            }
+                ],
+                "fnDrawCallback": function (oSettings) {
+                    $("#SelectedId").val("0");
+                    ShowHideAction();
+                }
+            });
+        }
+        $(function () {
+            $("#sortable").sortable();
+            $("#sortable").disableSelection();
+        });
+
+        $(document).ready(function () {
+            fillGrid();
+            $('#myDataTable > tbody').on('click', 'tr', function () {
+                if ($(this).hasClass('selected')) {
+                    $(this).removeClass('selected');
+                    $("#SelectedId").val(0);
+                }
+                else {
+                    $('#myDataTable > tbody tr.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                    $("#SelectedId").val($(this).find('#CourseId').val());
+                }
+                ShowHideAction();
+            });
+
+            fieldLength($("#CourseName"), $("#CourseName_feedback"));
+            fieldLength($("#CourseDescription"), $("#CourseDescription_feedback"));
+            fieldLength($("#Tags"), $("#Tags_feedback"));
+            fieldLength($("#PassMarks"), $("#PassMarks_feedback"));
+            $("#CourseName").focus();
+            if ($("#ModificationOption").val() === "0") {
+                $("div.input-append").children("*").addClass('disable');
+            }
+            function showerror() {
+                if ($('#errorMessages').text().trim().length > 0) {
+                    $("#errorMessages").show();
+                } else $("#errorMessages").hide();
+            }
+            if ($('#errorMessages').text().trim().length > 0) {
+                $("#errorMessages").show();
+            } else $("#errorMessages").hide();
+
+            $("#CourseName").keypress(function () { showerror(); });
+            $("#CourseDescription").keypress(function () { showerror(); });
+
+            $("#CourseName").blur(function () { showerror(); });
+            $("#CourseDescription").blur(function () { showerror(); });
+
+        });
+        $("#create").click(function (e) {
+            var result = $('#myform').valid();
+            if ($('#myform').valid()) {
+
+                $("#errorMessages").hide();
+                $('#myform').submit();
+                return true;
+
+            }
+            else { $("#errorMessages").show(); return false; }
+        });
+        $("#btnDelete").click(function () {
+            if ($("#SelectedId").val() > 0)
+                $('#exampleModal').modal('show')
+        });
+        $("#btnReorder").click(function () {
+            var CourseUnitList = [];
+
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CourseUnitOrder", "Course")" + "/" + @Model.CourseId,
+                dataType: "json",
+                success: function (data) {
+                    if (data.aaData != null && data.aaData != 'nothing' && data.aaData != 'undefined') {
+                        for (var i = 0; i < data.aaData.length; i++) {
+                            CourseUnitList.push({ CourseId: data.aaData[i].CourseId, UnitID: data.aaData[i].UnitID, UnitOrder: data.aaData[i].UnitOrder, UnitName: htmlEncode(data.aaData[i].UnitName) });
+                        }
+                    }
+                },
+                async: false
+            });
+            $("#sortable").empty();
+            for (var j = 0; j < CourseUnitList.length; j++) {
+                $("#sortable").append('<li class="ui-state-default" data-id="' + CourseUnitList[j].UnitID + '" data-courseid="' + CourseUnitList[j].CourseId +  '"><i class="fa fa-arrows-v" style="font-size:8px;"></i>&nbsp;' + CourseUnitList[j].UnitName  + '</li>')
+            }
+            $('#reorderModal').modal('show');
+        });
+
+        $("#btn_Order").click(function () {
+            var ResultOrder = [];
+            var iOrder = 0;
+            $("#sortable li").each(function() {
+                var LI = $(this);
+                iOrder++;
+                ResultOrder.push({ UnitID: LI.attr("data-id"), Order: iOrder});
+            });
+            $.ajax({
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                type: 'POST',
+                url: "@Url.Action("SaveCourseUnitOrder", "Course")" + "/" + @Model.CourseId,
+                data: JSON.stringify(ResultOrder),
+                success: function () {
+                },
+                complete: function () {
+                    fillGrid();
+                    $('#reorderModal').modal('hide');
+
+                },
+                failure: function (response) {
+                    window.location.reload(true);
+                }
+            });
+
+        });
+
+        $("#btn_deleteOk").click(function () {
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteUnit", "Course")" + "/" + $("#SelectedId").val(),
+                contentType: "application/json; charset=utf-8",
+                data: "",
+                dataType: "json",
+                sucess: function (data) {
+                },
+                complete: function (data, textStatus) {
+
+                    if (data.responseText != null && data.responseText != "") {
+                        $("#errormessage").html(data.responseText);
+                        $("#errormessage").show();
+                        $('#errormessage').delay(parseInt(((data.responseText.length * 0.2) + data.responseText.length) / 16) * 1000).fadeOut();
+                        $("#delete_popup").css("display", "none");
+                    }
+                    else if (data.responseText == "")
+                    { window.location.reload(true); }
+                    else { window.location.reload(true); }
+                },
+                async: false
+            });
+
+        });
+    </script>
+}

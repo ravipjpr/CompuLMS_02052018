@@ -1,0 +1,474 @@
+﻿@model CLSLms.CourseUnit
+@{
+    ViewBag.Title = "Edit unit";
+    <script src="~/Include/ckeditor/ckeditor.js"></script>
+    <link href="~/Content/jquery-ui.css" rel="stylesheet" />
+    <style>
+        .ui-widget.ui-widget-content {
+            border: 1px solid #c5c5c5;
+        }
+
+        .ui-autocomplete {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: default;
+        }
+
+        .ui-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: block;
+            outline: 0;
+        }
+
+        .ui-widget {
+            font-size: 0.9em;
+        }
+    </style>
+}
+@using (Html.BeginForm("EditCourseUnit", "Course", FormMethod.Post, new { enctype = "multipart/form-data", @id = "myform" }))
+{
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb" role="navigation">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="~/Admin">@LMSResourse.Common.ApplicationMenu.lblHome</a></li>
+                <li class="breadcrumb-item"><a href="~/Course">@LMSResourse.Common.ApplicationMenu.lblCourses</a></li>
+                <li class="breadcrumb-item"><a href="~/Course/CustomCourseEdit?id=@Model.courseid">@ViewBag.CourseTitile</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@LMSResourse.Admin.Course.btnEditCourseUnit</li>
+                <li class="breadcrumb-item active" aria-current="page">@ViewBag.UnitType</li>
+            </ol>
+        </nav>
+        @Html.HiddenFor(model => model.courseid)
+        @Html.HiddenFor(model => model.unit_id)
+        @Html.HiddenFor(model => model.unit_type)
+        @Html.HiddenFor(model => model.unit_order)
+        @Html.HiddenFor(model => model.sub_type)
+        <div style="display:none;" class="errormessage" id="errorMessages">
+            @Html.ValidationMessageFor(model => model.unit_name)
+            @Html.ValidationMessageFor(model => model.unit_content)
+            @Html.ValidationMessageFor(model => model.unit_path_url)
+            <div id="servererrors"></div>
+        </div>
+        <div class="form-group" id="assessment">
+            <div class="form-row">
+                <div class="col-md-2"><label for="assessments">@LMSResourse.Admin.Course.lblUnitAssessment</label></div>
+                <div class="col-md-6">
+                    <input type="text" value="" id="assessments" class="form-control" />
+                    <p class="text-md-left">@LMSResourse.Admin.Course.tooltipUnitAssessmentSearch</p>
+                    <input type="hidden" value="0" id="assessment_id" name="assessment_id" />
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="assessment2">
+            <div class="form-row">
+                <div class="col-md-2"><label for="selectedAssessment">@LMSResourse.Admin.Course.lblSelectedUnitAssessment</label></div>
+                <div class="col-md-6">
+                    <label type="text" value="" id="selectedAssessment"></label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="unitname">
+            <div class="form-row">
+                <div class="col-md-2">@Html.LabelFor(model => model.unit_name)*</div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        @Html.TextBoxFor(model => model.unit_name, new { @class = "form-control", @aria_describedby = "basic-addon2" })
+                        <span class="input-group-addon" id="UnitName_feedback"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="content">
+            <div class="form-row">
+                <div class="col-md-2">@Html.LabelFor(model => model.unit_content)*</div>
+                <div class="col-md-8">
+                    @Html.TextAreaFor(model => model.unit_content, new { @class = "form-control ckeditor", @aria_describedby = "basic-addon2" })
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="webcontentPreview">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <iframe id="frame" src="" width="100%" height="300" class="form-control"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="video">
+            <div class="form-row">
+                <div class="col-md-2">Video Source</div>
+                <div class="col-md-6">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-outline-primary btn-sm active" id="lblFile">
+                            <input type="radio" name="options" id="optFile" autocomplete="off" checked> @LMSResourse.Admin.Course.optUnitLocalFile
+                        </label>
+                        <label class="btn btn-outline-primary btn-sm" id="lblYoutube">
+                            <input type="radio" name="options" id="optYouTube" autocomplete="off"> @LMSResourse.Admin.Course.optUnitYouTube
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="webcontent">
+            <div class="form-row">
+                <div class="col-md-2">@Html.LabelFor(model => model.unit_path_url)</div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" data-val-length-max="250" id="unit_path_url" name="unit_path_url" onblur="CustomValidity()" value="@Model.unit_path_url" />
+                        <span class="input-group-addon" id="unit_path_url_feedback"></span>
+                        <div class="input-group-addon" title="@LMSResourse.Admin.Course.tooltilYouEmbedURL" data-toggle="tooltip"><i class="fa fa-info" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="davContent">
+            <div class="form-row">
+                <div class="col-md-2" id="davLabel">@Html.LabelFor(model => model.unit_path_url)</div>
+                <div class="col-md-2" id="davLabel2" style="display:none"><label for="fi">@LMSResourse.Admin.Course.lblUnitContentAudio</label></div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="file" id="fi" class="form-control-file" name="fi" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="divAudioDealy">
+            <div class="form-row">
+                <div class="col-md-2">@Html.LabelFor(model => model.audio_delay)</div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        @Html.DropDownListFor(m => m.audio_delay, Enumerable.Range(0, 60).Select(i => new SelectListItem { Text = i.ToString(), Value = i.ToString() }))
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" id="youtubePreview">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-6">
+                    <iframe id="showYoutube" allowfullscreen style="max-width: 100%;" src=""></iframe>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-6">
+                    <input type="submit" class="btn btn-primary" value="@LMSResourse.Common.Common.btnSave" id="create" />&nbsp;
+                    @Html.ActionLink(LMSResourse.Common.Common.btnCancel, "CustomCourseEdit", "Course", new { id = Model.courseid }, new { @class = "btn btn-secondary" })
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+<script src="~/Scripts/jquery-ui.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            fieldLength($("#unit_name"), $("#UnitName_feedback"));
+            fieldLength($("#unit_path_url"), $("#unit_path_url_feedback"));
+            $("#unit_name").focus();
+
+            $("#webcontent").hide();
+            $("#webcontentPreview").hide();
+            $("#content").hide();
+            $("#davContent").hide();
+            $("#showYoutube").hide();
+            $("#video").hide();
+            $("#assessment").hide();
+            $("#assessment2").hide();
+            $("#divAudioDealy").hide();
+            if ("@Model.unit_type" == "1") {
+                $("#content").show();
+                $("#davContent").show();
+                $("#davLabel").hide();
+                $("#davLabel2").show()
+                $("#divAudioDealy").show();
+            }
+            else if ("@Model.unit_type" == "3" || "@Model.unit_type" == "5") {
+                $("#davContent").show();
+                $("#unit_content").val("NA");
+            }
+            else if ("@Model.unit_type" == "4") {
+                $("#video").show();
+                $("#unit_content").val("NA");
+                if ("@Model.sub_type" == "1") {
+                    $("#davContent").show();
+                }
+                else {
+                    $("#webcontent").show();
+                    $("#optFile").prop("checked", false);
+                    $("#lblFile").removeClass("active");
+                    $("#optYouTube").prop("checked", true);
+                    $("#lblYoutube").addClass("active");
+                }
+            }
+            else if ("@Model.unit_type" == "6") {
+                $("#assessment").show();
+                $("#assessment2").show();
+                $("#unitname").hide();
+                $("#unit_content").val("NA");
+                $("#unit_path_url").val("NA")
+                $("#assessments").focus();
+                $("#assessment_id").val("@Model.assessment_id");
+                $("#selectedAssessment").text("@ViewBag.AssessmentName");
+            }
+
+            $("#optFile").change(function () {
+                if (this.checked) {
+                    $("#sub_type").val("1");
+                    $("#davContent").show();
+                    $("#webcontent").hide();
+                    $("#showYoutube").hide();
+                }
+            });
+            $("#optYouTube").change(function () {
+                if (this.checked) {
+                    $("#sub_type").val("2");
+                    $("#webcontent").show();
+                    $("#davContent").hide();
+                    $("#unit_path_url").val("");
+                }
+            });
+            $("#create").click(function (e) {
+                var result = $('#myform').valid();
+                if (result == true) {
+                    if (Validate() == false) {
+                        $("#errorMessages").show();
+                        return false;
+                    }
+                    else {
+                        $("#errorMessages").hide();
+                        $('#myform').submit();
+                    }
+                }
+                else {
+                    $("#errorMessages").show();
+                }
+            });
+            $("#loadPreview").click(function () {
+                if ($("#unit_path_url").val() != "") {
+                    $("#frame").attr("src", "https://en.wikipedia.org/wiki/Rajasthan");
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            var ActivityTypeConstant = "@Model.unit_type";;
+            var MaxContentLength = parseInt(1024 * 1024 * 50, 10); //50 MB
+            $("#servererrors").html("");
+            switch (ActivityTypeConstant) {
+                case "4":
+                    MaxContentLength = 1024 * 1024 * 50; //50 MB
+                    errorMessage2 = "@LMSResourse.Admin.Course.msgErrVideoLarge" + " 50MB.";
+                    break;
+                case "5","1":
+                    MaxContentLength = 1024 * 1024 * 50; //50 MB
+                    errorMessage2 = "@LMSResourse.Admin.Course.msgErrAudioLarge" + " 50MB.";
+                    break;
+                case "3":
+                    MaxContentLength = 1024 * 1024 * 8; //8 MB
+                    errorMessage2 = "@LMSResourse.Admin.Course.msgErrDocumentLarge" + " 8MB.";
+                    break;
+            }
+
+            $('#fi').bind('change', function () {
+                var file = getNameFromPath($("#fi").val());
+                if (file != null && file != 'undefined' && file != 'null') {
+                    var a = parseInt(parseInt(MaxContentLength, 10) - parseInt(file.size, 10));
+                    if (a <= parseInt("0", 10)) {
+                        $("#servererrors").html(errorMessage2);
+                    }
+                }
+            })
+
+        });
+        function getNameFromPath(strFilepath) {
+            var objRE = new RegExp(/([^\/\\]+)$/);
+            var strName = objRE.exec(strFilepath);
+
+            if (strName == null) {
+                return null;
+            }
+            else {
+                return strName[0];
+            }
+        }
+
+        function Validate() {
+            if ("@Model.unit_type" == "1") {
+                if (CKEDITOR.instances['unit_content'].getData() == '' || CKEDITOR.instances['unit_content'].getData() == null || CKEDITOR.instances['unit_content'].getData() == 'nothing') {
+                    $("#servererrors").html('@LMSResourse.Admin.Course.msgReqUnitContent');
+                    return false;
+                }
+                if (checkfile() == false) {
+                    return false;
+                }
+            }
+            else if ("@Model.unit_type" == "2") {
+                if ($("#unit_path_url").val() == "") {
+                    $("#servererrors").html('@LMSResourse.Admin.Course.msgReqUnitContent');
+                    return false;
+                }
+            }
+            else if ("@Model.unit_type" == "3") {
+                if (checkfile() == false) {
+                    return false;
+                }
+            }
+            else if ("@Model.unit_type" == "4") {
+                if ($("#optFile").is(':checked')) {
+                    if (checkfile() == false) {
+                        return false;
+                    }
+                }
+                else {
+                    if (CustomValidity() == false) {
+                        return false;
+                    }
+                }
+            }
+            else if ("@Model.unit_type" == "5") {
+                if (checkfile() == false) {
+                    return false;
+                }
+            }
+            else if ("@Model.unit_type" == "6") {
+                if ($("#selectedAssessment").text() == "" && $("#assessment_id").val() == 0) {
+                    $("#servererrors").html('@LMSResourse.Admin.Course.msgReqUnitContent');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function checkfile() {
+            var ActivityTypeConstant = "@Model.unit_type";
+            $("#servererrors").html("");
+            var file = getNameFromPath($("#fi").val());
+            var AllowedFileExtensions = null;
+            var found = -1;
+            var errorMessage1 = "@LMSResourse.Admin.Course.msgReqUnitFile";
+            var errorMessage2 = "";
+            var flag = false;
+            if (file != null && file != 'undefined' && file != 'null') {
+                var extension = file.substr((file.lastIndexOf('.'))).toString().toLowerCase();
+                switch (ActivityTypeConstant) {
+                    case "4":
+                        AllowedFileExtensions = new Array(".mp4", ".ogg");
+                        found = $.inArray(extension, AllowedFileExtensions)
+                        errorMessage1 = "@LMSResourse.Admin.Course.msgErrVideoNotSupport " + AllowedFileExtensions.join(", ");
+                        if (found > -1) flag = true;
+                        break;
+                    case "5", "1":
+                        AllowedFileExtensions = new Array(".mp3", ".mp4", ".ogg");
+                        found = $.inArray(extension, AllowedFileExtensions)
+                        errorMessage1 = "@LMSResourse.Admin.Course.msgErrAudioNotSupport " + AllowedFileExtensions.join(", ");
+                        if (found > -1) flag = true;
+                        break;
+                    case "3":
+                        AllowedFileExtensions = new Array(".doc", ".xls", ".docx", ".xlsx", ".pdf", ".ppt", ".pptx", ".pps");
+                        errorMessage1 = "@LMSResourse.Admin.Course.msgErrDocumentNotSupport " + AllowedFileExtensions.join(", ");
+                        found = $.inArray(extension, AllowedFileExtensions)
+                        if (found > -1) flag = true;
+                        break;
+                    default:
+                        flag = false;
+                        break;
+                }
+            }
+            else
+                flag = true;
+            if (flag == false) {
+                $("#servererrors").html(errorMessage1);
+                return false;
+            }
+            return flag;
+        }
+        function CustomValidity() {
+            if (/^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/i.test($("#unit_path_url").val())) {
+                $("#errorMessages").hide();
+                $("#showYoutube").show();
+                $("#showYoutube").attr("src", $("#unit_path_url").val());
+                return true;
+            } else {
+                $("#errorMessages").show();
+                $("#servererrors").html("@LMSResourse.Admin.Course.msgReqUnitWebContentURL");
+                return false;
+            }
+        }
+    </script>
+    <script>
+        $(function () {
+            $("#assessments").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "@Url.Action("GetAssessmentForUnit", "Course")",
+                        dataType: "json",
+                        data: {
+                            term: request.term
+                        },
+                        success: function (data) {
+                            if (!data.aaData.length) {
+                                var result = [
+                                 {
+                                     label: '@LMSResourse.Admin.Course.lblUnitNoMatchedFound',
+                                     value: response.term,
+                                     id: 0
+                                 }
+                                ];
+                                response(result);
+                            }
+                            else {
+                                response(data.aaData);
+                            }
+                        }
+                    });
+                },
+                minLength: 2,
+                select: function (event, ui) {
+                    //alert("Selected: " + ui.item.value + " aka " + ui.item.id);
+                    if (ui.item.id != 0) {
+                        $("#unit_name").val(ui.item.value);
+                        $("#selectedAssessment").text(ui.item.value);
+                        $("#assessment_id").val(ui.item.id);
+                    }
+                    else {
+                        $("#unit_name").val("");
+                        $("#selectedAssessment").text("");
+                        $("#assessment_id").val("0");
+                    }
+                }
+            });
+        });
+    </script>
+
+
+<script>
+    CKEDITOR.replace('unit_content', {
+            extraPlugins: 'embed,autoembed,image2',
+			height: 300,
+
+			// Configure your file manager integration. This example uses CKFinder 3 for PHP.
+			filebrowserBrowseUrl: '/ckfinder/ckfinder.html',
+			filebrowserImageBrowseUrl: '@Url.Action("uploadPartial", "Course")',
+            filebrowserUploadUrl: '@Url.Action("uploadnow", "Course")',
+            filebrowserImageUploadUrl: '@Url.Action("uploadnow", "Course")',
+			embed_provider: '//ckeditor.iframe.ly/api/oembed?url={url}&callback={callback}',
+
+		});
+		function updateValue(id, value) {
+		    // this gets called from the popup window and updates the field with a new value 
+		    var element = $("label:contains('URL')");
+		    var elemen2 = element.next('div');
+		    elemen2.find('.cke_dialog_ui_input_text').val(value);
+		}
+</script>
+
+
+
+}
