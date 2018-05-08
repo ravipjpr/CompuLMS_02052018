@@ -1303,5 +1303,348 @@ namespace LMS.Controllers
             }
             doc.Save(courseDirPath + "\\imsmanifest.xml");
         }
+		
+		#region // Add course to group 
+        /// <summary>
+        /// course assigned to course
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult AssignedCourseToGroup(int id = 0)
+        {
+            var Courseexist = db.Courses.Find(id); // find the course 
+            Course_Assigned_T_Group us = new Course_Assigned_T_Group();
+
+            if (Courseexist != null)
+            {
+                if (Courseexist.IsFinalized == true && Courseexist.IsDeleted == false) // check the course is not deleted.
+                {
+                    us.CourseId = Courseexist.CourseId;
+                    us.CourseName = Courseexist.CourseName;
+                    us.DateFormatForClientSide = ConfigurationManager.AppSettings["dateformatForCalanderClientSide"].ToString(); // sets the client side date format.
+                }
+                else // if course not exist then redirect it to course index page.
+                {
+                    return RedirectToAction("Index", "Course");
+                }
+
+            }
+            return View(us);
+        }
+
+        /// <summary>
+        /// Get the data of course assigned to groups
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public ActionResult AjaxHandlerCourseAssignedGroups(jQueryDataTableParamModel param)
+        {
+
+            var sortColumnIndex = Convert.ToInt32(Request["iSortCol_0"]);
+            Func<Assigned_Course_T_Group, string> orderingFunction = (c => sortColumnIndex == 0 ? c.GroupName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 1 ? c.OrganisationName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 2 ? c.GroupManager.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 3 ? c.EmailAddress.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 5 ? c.AssignedStatus.ToString() :
+                                                            c.GroupName.ToLower());
+            var sortDirection = Request["sSortDir_0"];// get the sort direction.
+            IEnumerable<Assigned_Course_T_Group> filterUserAssignedCourse = null;
+            long? CourseId = Int64.Parse(param.iD.ToString());
+            int languageId = 0;
+            languageId = int.Parse(Session["LanguageId"].ToString());
+            try
+            {
+                var GetResult = db.GetAssignedCourseGroup(CourseId, Convert.ToInt64(Session["UserID"]), languageId); // get the date from stored procedure.
+                var tempx = from x in GetResult
+                            select new Assigned_Course_T_Group
+                            {
+                                GroupId = x.GroupID,
+                                GroupName = x.GroupName,
+                                OrganisationName = x.OrganisationName,
+                                GroupManager = x.GroupManager,
+                                EmailAddress = x.EmailAddress,
+                                MaxUsers = Convert.ToString(x.MaxUsers),
+                                AssignedUsers = Convert.ToString(x.AssignedUsers),
+                                ExpiryDate = x.ExpiryDate,
+                                AssignedStatus = x.AssignedStatus == true ? true : false
+                            };
+                filterUserAssignedCourse = tempx.ToList<Assigned_Course_T_Group>();
+
+                /// search action
+                if (!string.IsNullOrEmpty(param.sSearch))
+                {
+                    filterUserAssignedCourse = from x in filterUserAssignedCourse
+                                               where x.GroupName.ToLower().Contains(param.sSearch.ToLower()) || x.OrganisationName.ToLower().Contains(param.sSearch.ToLower()) || x.GroupManager.ToLower().Contains(param.sSearch.ToLower()) || x.EmailAddress.ToLower().Contains(param.sSearch.ToLower())
+                                               select x;
+
+                }
+                else
+                {
+                    filterUserAssignedCourse = from x in filterUserAssignedCourse
+                                               select x;
+                }
+
+                // ordering action
+                if (sortDirection == "asc")
+                {
+                    filterUserAssignedCourse = filterUserAssignedCourse.OrderBy(orderingFunction);
+                }
+                else if (sortDirection == "desc")
+                {
+                    filterUserAssignedCourse = filterUserAssignedCourse.OrderByDescending(orderingFunction);
+                }
+
+                filterUserAssignedCourse = filterUserAssignedCourse.ToList();
+
+                // records to display            
+                var displayedUserAssignedCourse = filterUserAssignedCourse.Skip(param.iDisplayStart).Take(param.iDisplayLength);
+                if (param.iDisplayLength == -1)
+                    displayedUserAssignedCourse = filterUserAssignedCourse;
+
+                // create return object.
+                var result = from obj in displayedUserAssignedCourse.ToList()
+                             select new[] {
+                              obj.GroupName,
+                              obj.OrganisationName,
+                              obj.GroupManager,
+                              obj.EmailAddress,
+                              obj.ExpiryDate==null?"":((DateTime)obj.ExpiryDate).ToString(ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture),
+                              obj.AssignedStatus.ToString(),
+                              Convert.ToString(obj.GroupId),
+                              obj.MaxUsers,
+                              obj.AssignedUsers
+                          };
+                // return the object in json format.
+                return Json(new
+                {
+                    sEcho = param.sEcho,
+                    iTotalRecords = filterUserAssignedCourse.Count(),
+                    iTotalDisplayRecords = filterUserAssignedCourse.Count(),
+                    aaData = result
+                },
+                               JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+
+                },
+                                  JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        /// <summary>
+        /// http post method of assign course to groups
+        /// </summary>
+        /// <param name="model"></param>
+        [HttpPost]
+        public void AssignCourseToGroup(List<Submit_Course_Assignment_T_Group> model)
+        {
+            foreach (var x in model)
+            {
+                var RecodrExist = db.GroupCourses.Where(y => y.GroupID == x.GroupId && y.CourseId == x.CourseId).FirstOrDefault();
+                // check record exist or not
+                if (RecodrExist != null)
+                {
+                    // if record exist then update the existing data
+                    if (x.AssignmentStatus == true && !string.IsNullOrWhiteSpace(x.AssignmentDate))
+                    {
+                        RecodrExist.ExpiryDate = DateTime.ParseExact(x.AssignmentDate + " 23:59:59", ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture);
+                        RecodrExist.AssignedStatus = true;
+                        Common.CourseGroupUserAssignmentSendMail("CGASS", x.GroupId, x.CourseId);
+                    }
+                    else
+                    {
+                        RecodrExist.ExpiryDate = null;
+                        RecodrExist.AssignedStatus = false;
+
+                    }
+                    RecodrExist.DateLastModified = DateTime.Now;
+                    RecodrExist.LastModifiedByID = Convert.ToInt64(Session["UserID"]);
+                    db.SaveChanges();
+                }
+                else if (x.AssignmentStatus == true && !string.IsNullOrWhiteSpace(x.AssignmentDate))
+                {
+                    // create the new record indatabase as record not exist.
+                    GroupCourse NewRecord = new GroupCourse();
+                    NewRecord.CourseId = x.CourseId;
+                    NewRecord.GroupID = x.GroupId;
+                    NewRecord.ExpiryDate = DateTime.ParseExact(x.AssignmentDate + " 23:59:59", ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture);
+                    NewRecord.AssignedStatus = true;
+                    NewRecord.CreationDate = DateTime.Now;
+                    NewRecord.CreatedById = Convert.ToInt64(Session["UserID"]);
+                    db.GroupCourses.Add(NewRecord);
+                    db.SaveChanges();
+
+                    Common.CourseGroupUserAssignmentSendMail("CGASS", x.GroupId, x.CourseId);
+                }
+            }
+        }
+
+        #endregion
+
+        #region // Assign courses to user
+        [HttpGet]
+        public ActionResult AjaxHandlerAssignedCoursesToUser(jQueryDataTableParamModel param)
+        {
+            var sortColumnIndex = Convert.ToInt32(Request["iSortCol_0"]);
+            Func<Assigned_Course_T_Users, string> orderingFunction = (c => sortColumnIndex == 0 ? c.FirstName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 1 ? c.LastName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 2 ? c.EmailAddress.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 3 ? c.OrganisationName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 5 ? c.AssignedStatus.ToString() :
+                                                            c.FirstName.ToLower());
+            var sortDirection = Request["sSortDir_0"];// get the sort direction.
+            IEnumerable<Assigned_Course_T_Users> filterUserAssignedCourse = null;
+            long? CourseId = Int64.Parse(param.iD.ToString());
+            int languageId = 0;
+            languageId = int.Parse(Session["LanguageId"].ToString());
+            try
+            {
+                var GetResult = db.GetAssignedCoursesToUser((Common.IsAdmin() ? 0 : Convert.ToInt64(Session["UserID"])), languageId, CourseId); // get the date from stored procedure.
+                var tempx = from x in GetResult
+                            select new Assigned_Course_T_Users
+                            {
+                                UserId = x.UserId,
+                                FirstName = x.FirstName,
+                                LastName = x.LastName,
+                                OrganisationName = x.OrganisationName,
+                                EmailAddress = x.EmailAddress,
+                                ExpiryDate = x.ExpiryDate,
+                                AssignedStatus = x.AssignedStatus == true ? true : false
+                            };
+                filterUserAssignedCourse = tempx.ToList<Assigned_Course_T_Users>();
+
+                /// search action
+                if (!string.IsNullOrEmpty(param.sSearch))
+                {
+                    filterUserAssignedCourse = from x in filterUserAssignedCourse
+                                               where x.FirstName.ToLower().Contains(param.sSearch.ToLower()) || x.OrganisationName.ToLower().Contains(param.sSearch.ToLower()) || x.EmailAddress.ToLower().Contains(param.sSearch.ToLower())
+                                               select x;
+
+                }
+                else
+                {
+                    filterUserAssignedCourse = from x in filterUserAssignedCourse
+                                               select x;
+                }
+
+                // ordering action
+                if (sortDirection == "asc")
+                {
+                    filterUserAssignedCourse = filterUserAssignedCourse.OrderBy(orderingFunction);
+                }
+                else if (sortDirection == "desc")
+                {
+                    filterUserAssignedCourse = filterUserAssignedCourse.OrderByDescending(orderingFunction);
+                }
+
+                filterUserAssignedCourse = filterUserAssignedCourse.ToList();
+
+                // records to display            
+                var displayedUserAssignedCourse = filterUserAssignedCourse.Skip(param.iDisplayStart).Take(param.iDisplayLength);
+                if (param.iDisplayLength == -1)
+                    displayedUserAssignedCourse = filterUserAssignedCourse;
+
+                // create return object.
+                var result = from obj in displayedUserAssignedCourse.ToList()
+                             select new[] {
+                              obj.FirstName,
+                              obj.LastName,
+                              obj.EmailAddress,
+                              obj.OrganisationName,
+                              obj.ExpiryDate==null?"":((DateTime)obj.ExpiryDate).ToString(ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(),CultureInfo.InvariantCulture),
+                              obj.AssignedStatus.ToString(),
+                              Convert.ToString(obj.UserId),
+
+                          };
+                // return the object in json format.
+                return Json(new
+                {
+                    sEcho = param.sEcho,
+                    iTotalRecords = filterUserAssignedCourse.Count(),
+                    iTotalDisplayRecords = filterUserAssignedCourse.Count(),
+                    aaData = result
+                },
+                               JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+
+                },
+                                  JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public ActionResult AssignCourseToUser(int id)
+        {
+            var Courseexist = db.Courses.Find(id); // find the course 
+            Course_Assigned_Course_T_Users us = new Course_Assigned_Course_T_Users();
+
+            if (Courseexist != null)
+            {
+                if (Courseexist.IsFinalized == true && Courseexist.IsDeleted == false) // check the course is not deleted.
+                {
+                    us.CourseId = Courseexist.CourseId;
+                    us.CourseName = Courseexist.CourseName;
+                    us.DateFormatForClientSide = ConfigurationManager.AppSettings["dateformatForCalanderClientSide"].ToString(); // sets the client side date format.
+                }
+                else // if course not exist then redirect it to course index page.
+                {
+                    return RedirectToAction("Index", "Course");
+                }
+
+            }
+            return View(us);
+        }
+
+        //http post method to assign courses to users       
+        [HttpPost]
+        public void AssignCourseToUser(List<Submit_Assigned_Course_T_Users> model)
+        {
+            foreach (var x in model)
+            {
+                // check user and course relation ship exist in database or not. ie course is assigned to user or not.
+                var RecodrExist = db.UserCourses.Where(y => y.UserId == x.UserId && y.CourseId == x.CourseId).FirstOrDefault();
+                if (RecodrExist != null) // if exist then update the existing record
+                {
+                    if (x.AssignmentStatus == true && !string.IsNullOrWhiteSpace(x.AssignmentDate))
+                    {
+                        RecodrExist.ExpiryDate = DateTime.ParseExact(x.AssignmentDate + " 23:59:59", ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture);
+                        RecodrExist.AssignedStatus = true;
+                        Common.CourseGroupUserAssignmentSendMail("CGASS", 0, x.CourseId, x.UserId);
+                    }
+                    else
+                    {
+                        RecodrExist.ExpiryDate = null;
+                        RecodrExist.AssignedStatus = false;
+                    }
+                    RecodrExist.DateLastModified = DateTime.Now;
+                    RecodrExist.LastModifiedByID = Convert.ToInt64(Session["UserID"]);
+                    db.SaveChanges();
+                } // create the new record in database.
+                else if (x.AssignmentStatus == true && !string.IsNullOrWhiteSpace(x.AssignmentDate))
+                {
+                    UserCourse NewRecord = new UserCourse();
+                    NewRecord.CourseId = x.CourseId;
+                    NewRecord.UserId = x.UserId;
+                    NewRecord.ExpiryDate = DateTime.ParseExact(x.AssignmentDate + " 23:59:59", ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture);
+                    NewRecord.AssignedStatus = true;
+                    NewRecord.CreationDate = DateTime.Now;
+                    NewRecord.CreatedById = Convert.ToInt64(Session["UserID"]);
+                    db.UserCourses.Add(NewRecord);
+                    db.SaveChanges();
+
+                    Common.CourseGroupUserAssignmentSendMail("CGASS", 0, x.CourseId, x.UserId);
+                }
+            }
+        }
+
+
+        #endregion
     }
 }
