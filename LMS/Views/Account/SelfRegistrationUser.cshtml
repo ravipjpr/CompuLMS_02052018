@@ -201,6 +201,7 @@
 
             $(document).ready(function () {
                 $('#groupListCheckBox').find('input[type=checkbox]').each(function (e) {
+
                     $(this).attr("style", "margin-right: 10px; margin-top: 6px;");
                 });
                 $('#groupListCheckBox').find('label').each(function (e) {
@@ -248,6 +249,7 @@
                             }
                         }
 
+
                         checkUniqueSelfRegEmailAddress("@LMSResourse.Admin.ProfileSettings.msgSelfRegEmailExists", "@LMSResourse.Admin.Login.msgForgotPasswordError", courseTypeVal)
                     }
                     @*var result = $('#myform1').valid();
@@ -269,8 +271,10 @@
                         fillBlocks($("#DistrictID").val(), 0, 0, "");
                         fillUsers(0, "", "0");
 
-                        $(this).parent().addClass("focus");
                         courseTypeVal = $(this).attr("value");
+                        $(this).parent().addClass("focus");
+
+                        
                         if (courseTypeVal == "1") {
                             $(".dvteacher").hide();
                             $(".dvparent").hide();
@@ -291,6 +295,7 @@
 
                 $('#groupListCheckBox').find('input[type="checkbox"]').each(function () {
                     $(this).click(function () {
+
                         if (courseTypeVal == 2) {
                             var groupIds = "";
 
