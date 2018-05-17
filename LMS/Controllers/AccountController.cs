@@ -936,9 +936,9 @@ namespace LMS.Controllers
                                 {
                                     foreach (var usr in Objuser)
                                     {
-                                        
-                                        MailEngine oLog = new MailEngine();
                                         MailEngine.Send(selfregistration.EmailAddress, usr.EmailAddress, subject, body, objInstance.SmtpIPv4);
+                                        MailEngine oLog = new MailEngine();
+
                                         if (userdenycount == 0)
                                         {
                                             var objSelfReg1 = (from s in db.SelfRegistrations
@@ -974,7 +974,9 @@ namespace LMS.Controllers
             if (ModelState.IsValid)
             {
                 var objSelfReg = new SelfRegistration();
+
                 var userdenycount = db.SelfRegistrations.Where(self => self.EmailAddress == selfregistration.Email_Address && self.IsApprove == 2).Count();
+
                 if (userdenycount == 0)
                 {
                     objSelfReg = new SelfRegistration();
@@ -987,8 +989,8 @@ namespace LMS.Controllers
                     db.SaveChanges();
                 }
                 else
-                {
-                    objSelfReg = db.SelfRegistrations.Where(self => self.EmailAddress == selfregistration.Email_Address && self.IsApprove == 2).FirstOrDefault();
+                {   objSelfReg = db.SelfRegistrations.Where(self => self.EmailAddress == selfregistration.Email_Address && self.IsApprove == 2).FirstOrDefault();
+
                     if (objSelfReg != null)
                     {
                         objSelfReg.FirstName = selfregistration.FirstName;
@@ -1004,6 +1006,7 @@ namespace LMS.Controllers
                 {
                     //If any order exist then approve user  manually and send login detail mail to user 
                     var selfUser = db.SelfRegistrations.Where(self => self.EmailAddress == selfregistration.Email_Address).FirstOrDefault();
+
                     var result = await ApproveSelfRegisterdUserManually(selfregistration.Email_Address, (selfUser != null ? Convert.ToInt32(selfUser.SelfRegistrationId) : 0));
                     if (result)
                     {
