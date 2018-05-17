@@ -23,8 +23,10 @@
                 @Html.AntiForgeryToken()
                 <div class="form-group">
                     @Html.LabelFor(m => m.UserName, new { style = "color:#0867BE" })<span class="req" style="color: #FFC107;font-size:20px">*</span>
-                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
+                    
+                    
                     @Html.ValidationMessageFor(m => m.UserName, "", new { @style = "color:red" })
+                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
                 </div>
                 <div class="form-group">
                     @Html.LabelFor(m => m.Password, new { style = "color:#0867BE" })<span class="req" style="color: #FFC107;font-size:20px">*</span>
