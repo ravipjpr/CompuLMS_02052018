@@ -20,12 +20,14 @@
     <link rel="stylesheet" href="~/Scripts/sol.css">
     <!-- //Custom Theme files -->
     <!-- js -->
-    @*<script src="js/jquery-2.2.3.min.js"></script>*@
-    <script src="~/Scripts/jquery-2.1.3.min.js"></script>
-    <script src="~/Include/startbootstrap-sb-admin/vendor/popper/popper.min.js"></script>
     <script src="~/Include/startbootstrap-sb-admin/vendor/bootstrap/js/bootstrap.min.js"></script>
-    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="js/jquery-2.2.3.min.js"></script>
+    <script src="~/Scripts/jquery-2.1.3.min.js"></script>
+    
     <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    
+    <script src="~/Include/startbootstrap-sb-admin/vendor/popper/popper.min.js"></script>
     <script src="~/Scripts/commonfunction.js"></script>
     <script src="@Url.Content("~/Scripts/common-functions-util.js")"></script>
     <!-- //js -->
@@ -196,6 +198,7 @@
             var port = window.location.port;
             var appname = window.location.pathname.split("/", 2).toString().replace(",", "");
             var pathname1 = "";
+
             if (port == "")
                 pathname1 = window.location.protocol + "//" + window.location.hostname + "/" + appname;
 
