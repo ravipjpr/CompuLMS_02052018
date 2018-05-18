@@ -20,7 +20,7 @@
             <a style="margin-right:20px;" data-toggle="tooltip" data-placement="bottom" class="btn btn-outline-primary disabled" title="@LMSResourse.Common.ApplicationMenu.tooltipEditUser" id="userEdit" href="#"><i class="fa fa-pencil-square-o"></i></a>&nbsp;
             <a style="margin-right:20px;" data-toggle="tooltip" data-placement="bottom" class="btn btn-outline-primary" title="@LMSResourse.Common.ApplicationMenu.tooltipDeleteUser" id="userdelete" href="#" data-target="#exampleModal"><i class="fa fa-trash-o"></i></a>&nbsp;
             <a style="margin-right:20px;" data-toggle="tooltip" data-placement="bottom" class="btn btn-outline-primary" title="@LMSResourse.Common.ApplicationMenu.tooltipImportUser" href="~/UserManagement/ImportUser"><i class="fa fa-download"></i></a>&nbsp;
-            
+            <a style="margin-right:20px;" data-toggle="tooltip" data-placement="bottom" class="btn btn-outline-primary" title="@LMSResourse.Common.ApplicationMenu.tooltipAssignCourses" id="assignCourse" href="#"><i class="fa fa-random"></i></a>&nbsp;
         </nav>
     </div>
 
@@ -165,10 +165,11 @@
                 },
                 "aoColumns": [
                             {
-                                "bSortable": true,
+                                
                                 "fnRender": function (oObj) {
                                     return (htmlEncode(oObj.aData[0].toString()));
-                                }
+                                },
+                                "bSortable": true
                             },
                             {
                                 "bSortable": true,
