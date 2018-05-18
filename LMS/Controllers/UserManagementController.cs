@@ -54,9 +54,10 @@ namespace LMS.Controllers
         {
             var currentLoginUser = Convert.ToInt64(Session["UserID"].ToString());
             var sortColumnIndex = Convert.ToInt32(Request["iSortCol_0"]);
-            Func<UserProfile, string> orderingFunction = (c => sortColumnIndex == 0 ? string.IsNullOrEmpty(c.EmployeeID) ? "-" : c.EmployeeID.ToLower() :
+
+            Func<UserProfile, string> orderingFunction = (c => sortColumnIndex == 0 ? string.IsNullOrEmpty(c.EmployeeID)? "-" :c.EmployeeID.ToLower() :
                                                         sortColumnIndex == 1 ? c.FirstName.ToLower() :
-                                                        sortColumnIndex == 2 ? string.IsNullOrWhiteSpace(c.LastName) ? "-" : (c.LastName).ToLower() :
+                                                        sortColumnIndex == 2 ? string.IsNullOrWhiteSpace(c.LastName)? "-" :(c.LastName).ToLower() :
                                                         sortColumnIndex == 3 ? c.EmailAddress.ToLower() :
                                                         sortColumnIndex == 4 ? c.Organisation.OrganisationName.ToLower() :
                                                         sortColumnIndex == 7 ? c.Status.ToString() :
@@ -1167,7 +1168,68 @@ namespace LMS.Controllers
             }
             return View(us);
         }
-        
+        /// <summary>
+        /// http post method to assign courses to users
+        /// </summary>
+        /// <param name="model"></param>
+        [HttpPost]
+        public void AssignCourseToUser(List<SubmitAssignment> model)
+        {
+            foreach (var x in model)
+            {
+                // check user and course relation ship exist in database or not. ie course is assigned to user or not.
+                var RecodrExist = db.UserCourses.Where(y => y.UserId == x.UserId && y.CourseId == x.CourseId).FirstOrDefault();
+                if (RecodrExist != null) // if exist then update the existing record
+                {
+                    if (x.AssignmentStatus == true && !string.IsNullOrWhiteSpace(x.AssignmentDate))
+                    {
+                        RecodrExist.ExpiryDate = DateTime.ParseExact(x.AssignmentDate + " 23:59:59", ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture);
+                        RecodrExist.AssignedStatus = true;
+                        Common.CourseGroupUserAssignmentSendMail("CGASS", 0, x.CourseId, x.UserId);
+                    }
+                    else
+                    {
+                        RecodrExist.ExpiryDate = null;
+                        RecodrExist.AssignedStatus = false;
+                    }
+                    RecodrExist.DateLastModified = DateTime.Now;
+                    RecodrExist.LastModifiedByID = Convert.ToInt64(Session["UserID"]);
+                    db.SaveChanges();
+                } // create the new record in database.
+                else if (x.AssignmentStatus == true && !string.IsNullOrWhiteSpace(x.AssignmentDate))
+                {
+                    UserCourse NewRecord = new UserCourse();
+                    NewRecord.CourseId = x.CourseId;
+                    NewRecord.UserId = x.UserId;
+                    NewRecord.ExpiryDate = DateTime.ParseExact(x.AssignmentDate + " 23:59:59", ConfigurationManager.AppSettings["dateformatForCalanderServerSide"].ToString(), CultureInfo.InvariantCulture);
+                    NewRecord.AssignedStatus = true;
+                    NewRecord.CreationDate = DateTime.Now;
+                    NewRecord.CreatedById = Convert.ToInt64(Session["UserID"]);
+                    db.UserCourses.Add(NewRecord);
+                    db.SaveChanges();
+
+                    Common.CourseGroupUserAssignmentSendMail("CGASS", 0, x.CourseId, x.UserId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// http post method to reset course data of user
+        /// </summary>
+        /// <param name="model"></param>
+        [HttpPost]
+        public object ResetCourses(string resetCourseIds, string UserID)
+        {
+            //string[] arrResetCourseIds = { };
+            //arrResetCourseIds = resetCourseIds.Split(',').ToArray();
+            long Userid = Convert.ToInt64(UserID);
+            int languageId = 0;
+            languageId = int.Parse(Session["LanguageId"].ToString());
+            ObjectParameter SuccessID = new ObjectParameter("SuccessID", typeof(Int32));
+            db.ResetCourseStatus(Userid, resetCourseIds, languageId, SuccessID);
+            return SuccessID.Value;
+        }
+
         #endregion
 
         #region // other function
