@@ -54,10 +54,9 @@ namespace LMS.Controllers
         {
             var currentLoginUser = Convert.ToInt64(Session["UserID"].ToString());
             var sortColumnIndex = Convert.ToInt32(Request["iSortCol_0"]);
-
-            Func<UserProfile, string> orderingFunction = (c => sortColumnIndex == 0 ? string.IsNullOrEmpty(c.EmployeeID)? "-" :c.EmployeeID.ToLower() :
+            Func<UserProfile, string> orderingFunction = (c => sortColumnIndex == 0 ? string.IsNullOrEmpty(c.EmployeeID) ? "-" : c.EmployeeID.ToLower() :
                                                         sortColumnIndex == 1 ? c.FirstName.ToLower() :
-                                                        sortColumnIndex == 2 ? string.IsNullOrWhiteSpace(c.LastName)? "-" :(c.LastName).ToLower() :
+                                                        sortColumnIndex == 2 ? string.IsNullOrWhiteSpace(c.LastName) ? "-" : (c.LastName).ToLower() :
                                                         sortColumnIndex == 3 ? c.EmailAddress.ToLower() :
                                                         sortColumnIndex == 4 ? c.Organisation.OrganisationName.ToLower() :
                                                         sortColumnIndex == 7 ? c.Status.ToString() :
@@ -1061,14 +1060,15 @@ namespace LMS.Controllers
         public ActionResult AjaxHandlerAssignedCourses(jQueryDataTableParamModel param)
         {
             var sortColumnIndex = Convert.ToInt32(Request["iSortCol_0"]);
-            Func<AssignedCourse, string> orderingFunction = (c => sortColumnIndex == 1 ? c.CourseName.TrimEnd().TrimStart().ToLower() :
-                                                            sortColumnIndex == 2 ? c.CategoryName.TrimEnd().TrimStart().ToLower() :
-                                                            sortColumnIndex == 3 ? c.CertificateName.TrimEnd().TrimStart().ToLower() :
-                                                            c.CourseName.ToLower());
+            
             var sortDirection = Request["sSortDir_0"];
             IEnumerable<AssignedCourse> filterUserAssignedCourse = null;
             var UserId = Int64.Parse(param.iD.ToString());
             int languageId = 0;
+            Func<AssignedCourse, string> orderingFunction = (c => sortColumnIndex == 1 ? c.CourseName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 2 ? c.CategoryName.TrimEnd().TrimStart().ToLower() :
+                                                            sortColumnIndex == 3 ? c.CertificateName.TrimEnd().TrimStart().ToLower() :
+                                                            c.CourseName.ToLower());
             languageId = int.Parse(Session["LanguageId"].ToString());
             try
             {
@@ -1112,11 +1112,11 @@ namespace LMS.Controllers
                 {
                     filterUserAssignedCourse = filterUserAssignedCourse.OrderByDescending(orderingFunction);
                 }
-
                 filterUserAssignedCourse = filterUserAssignedCourse.ToList();
 
                 // records to display            
                 var displayedUserAssignedCourse = filterUserAssignedCourse.Skip(param.iDisplayStart).Take(param.iDisplayLength);
+
                 if (param.iDisplayLength == -1)
                     displayedUserAssignedCourse = filterUserAssignedCourse;
 
