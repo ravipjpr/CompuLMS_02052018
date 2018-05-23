@@ -120,12 +120,11 @@ namespace LMS.Controllers
         
         public ActionResult CreateGroup()
         {
-            ViewBag.OrgList = new SelectList(db.Organisations.Where(org => org.Status == true && org.ExpiryDate >= DateTime.Now && org.IsDeleted == false).OrderBy(org => org.OrganisationName).Select(org => org), "OrganisationID", "OrganisationName");
             var model = new _Group();
             model.Status = true;
             model.DateFormatForClientSide = ConfigurationManager.AppSettings["dateformatForCalanderClientSide"].ToString(); // sets the client side date format.
-
-             //ConfigurationManager.AppSettings["dateformatForCalanderClientSide"].ToString(); // sets the client side date format.
+            ViewBag.OrgList = new SelectList(db.Organisations.Where(org => org.Status == true && org.ExpiryDate >= DateTime.Now && org.IsDeleted == false).OrderBy(org => org.OrganisationName).Select(org => org), "OrganisationID", "OrganisationName");
+           
             return View(model);
         }
 
