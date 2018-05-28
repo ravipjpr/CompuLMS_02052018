@@ -1763,15 +1763,13 @@ namespace LMS.Controllers
                                 {
                                     fileName = "scorm_video.mp4";
                                     absCourseZipPath = Path.Combine(absCourseDir, @fileName);
-
                                     hpf.SaveAs(absCourseZipPath);
+
                                     absCourseZipPath = processVideoUploadContent(true, g.ToString(), ObjCourse.CourseName, fileName, "", "", out fileName);
                                 }
                                 else
                                 {
-
                                     absCourseZipPath = Path.Combine(absCourseDir, @fileName);
-
                                     hpf.SaveAs(absCourseZipPath);
                                 }
 
@@ -1792,7 +1790,7 @@ namespace LMS.Controllers
                                 else if (hpf.ContentLength > MaxContentLength)
                                 {
                                     ModelState.AddModelError("FolderLocation", errorMessage2);
-                                    
+                                    //PrepareAvailableLangaugeModel(activity, false);
                                     return View(ObjCourse);
                                 }
                                 ObjCourse.FileSizeInKB = (hpf.ContentLength / 1024);
@@ -1801,10 +1799,8 @@ namespace LMS.Controllers
                             {
                                 Guid g = Guid.NewGuid();
                                 absCourseDir = Path.Combine(Server.MapPath("~") + @"\Content\Uploads\Courses\", "_" + g.ToString());
-
                                 relCourseDir = Path.Combine(@"\Content\Uploads\Courses\", "_" + g.ToString());
                                 Directory.CreateDirectory(absCourseDir);
-
                                 fileName = "testYoutube.zip";
                                 absCourseZipPath = processVideoUploadContent(true, g.ToString(), ObjCourse.CourseName, fileName, "", YouTubeURL, out fileName);
                             }
