@@ -509,16 +509,16 @@
                     $("#thContenttype").text($row.find("td:nth-child(2)").text());
                     $("#thStatus").text($row.find("td:nth-child(3)").text());
                     $("#thExpDate").text($row.find("td:nth-child(4)").text());
+
                     $("#thLastAccessDate").text($row.find("td:nth-child(5)").text());
                     $("#thStartPreview").html($row.find("td:nth-child(8)").html());
-
-                    $("#thCategory").text($row.find("td").attr("data-id7").replace(/%20/g, " "));
                     $("#thPassmarks").text($row.find("td").attr("data-id2").replace(/%20/g, " "));
                     $("#thIsmobile").text(($row.find("td").attr("data-id3") == "True" ? "Yes" : "No"));
                     $("#thIsmandatory").text(($row.find("td").attr("data-id5") == "True" ? "Mandatory" : "Optional"));
                     $("#thCourseDuration").text($row.find("td").attr("data-id4").replace(/%20/g, " "));
                     $("#thDescription").text($row.find("td").attr("data-id1").replace(/%20/g, " "));
-
+                    $("#thCategory").text($row.find("td").attr("data-id7").replace(/%20/g, " "));
+                   
                     $("#mCourseDetail").modal('show');
                 });
             });
