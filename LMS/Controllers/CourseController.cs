@@ -2438,17 +2438,18 @@ namespace LMS.Controllers
                             ObjNewCourseInfo.CourseId = obj.CourseId;
                             ObjNewCourseInfo.CourseName = obj.CourseName;
                             ObjNewCourseInfo.CourseDescription = obj.CourseDescription;
-                            ObjNewCourseInfo.LastModifiedById = obj.LastModifiedById;
-                            ObjNewCourseInfo.DateLastModified = obj.DateLastModified;
                             ObjNewCourseInfo.IsUserDefined = obj.IsUserDefined;
                             ObjNewCourseInfo.WindowHeight = obj.WindowHeight;
-                            ObjNewCourseInfo.WindowWidth = obj.WindowWidth;
-                            ObjNewCourseInfo.IsFinalized = obj.IsFinalized;
-                            ObjNewCourseInfo.FileSizeInKB = obj.FileSizeInKB;
-                            ObjNewCourseInfo.FolderLocation = obj.FolderLocation;
-                            ObjNewCourseInfo.LanguageId = defaultLanguage;
                             ObjNewCourseInfo.PassMarks = obj.PassMarks;
                             ObjNewCourseInfo.ScoLabel = obj.ScoLabel;
+                            ObjNewCourseInfo.LastModifiedById = obj.LastModifiedById;
+                            ObjNewCourseInfo.DateLastModified = obj.DateLastModified;
+                            ObjNewCourseInfo.WindowWidth = obj.WindowWidth;
+                            ObjNewCourseInfo.FileSizeInKB = obj.FileSizeInKB;
+                            ObjNewCourseInfo.FolderLocation = obj.FolderLocation;
+                            ObjNewCourseInfo.IsFinalized = obj.IsFinalized;
+                            ObjNewCourseInfo.LanguageId = defaultLanguage;
+                            
                             db.CourseInfoes.Add(ObjNewCourseInfo);
                             db.SaveChanges();
                         }
