@@ -1844,8 +1844,9 @@ namespace LMS.Controllers
                                 {
                                     activityImagePath = Path.Combine(@"\Content\Uploads\documents\", fileName);
                                 }
-                                AllowedFileExtensions = new string[] { ".DOC", ".XLS", ".DOCX", ".XLSX", ".PDF", ".PPT", ".PPTX", ".PPS" };
+                                
                                 MaxContentLength = 1024 * 1024 * 8; // 8 MB
+                                AllowedFileExtensions = new string[] { ".DOC", ".XLS", ".XLSX", ".PDF", ".PPT", ".PPTX", ".PPS", ".DOCX" };
                                 errorMessage1 = LMSResourse.Admin.Course.msgErrDocumentNotSupport + " " + string.Join(", ", AllowedFileExtensions);
                                 errorMessage2 = LMSResourse.Admin.Course.msgErrDocumentLarge + " 8MB";
                             }
@@ -2480,6 +2481,7 @@ namespace LMS.Controllers
             }
             return View(ObjCourse);
         }
+        #endregion
         #endregion
     }
 }
