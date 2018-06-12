@@ -1828,9 +1828,11 @@ namespace LMS.Controllers
                             }
                             else if (unitTypConstant == 5 || unitTypConstant == 1) // Audio OR Content Audio
                             {
-                                activityImagePath = Path.Combine(@"\Content\Uploads\audio\", fileName);
                                 AllowedFileExtensions = new string[] { ".MP3", ".MP4", ".OGG" };
+                                activityImagePath = Path.Combine(@"\Content\Uploads\audio\", fileName);
                                 MaxContentLength = 1024 * 1024 * 50; // 50 MB
+                                
+                                
                                 errorMessage1 = LMSResourse.Admin.Course.msgErrAudioNotSupport + " " + string.Join(", ", AllowedFileExtensions);
                                 errorMessage2 = LMSResourse.Admin.Course.msgErrAudioLarge + " 50MB";
                             }
