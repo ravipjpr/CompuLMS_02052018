@@ -392,14 +392,14 @@
                 $('#exampleModal').modal('show')
         });
         $("#btnReorder").click(function () {
+            
             var CourseUnitList = [];
-
             $.ajax({
                 type: "GET",
                 url: "@Url.Action("CourseUnitOrder", "Course")" + "/" + @Model.CourseId,
                 dataType: "json",
                 success: function (data) {
-                    if (data.aaData != null && data.aaData != 'nothing' && data.aaData != 'undefined') {
+                    if (data.aaData != null && data.aaData != 'undefined' && data.aaData != 'nothing' ) {
                         for (var i = 0; i < data.aaData.length; i++) {
                             CourseUnitList.push({ CourseId: data.aaData[i].CourseId, UnitID: data.aaData[i].UnitID, UnitOrder: data.aaData[i].UnitOrder, UnitName: htmlEncode(data.aaData[i].UnitName) });
                         }
